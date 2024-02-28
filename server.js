@@ -1,6 +1,6 @@
 const http = require("http");
-const errorHandler = require("./errorHandler");
 const {v4: uuidv4} = require("uuid");
+const errorHandler = require("./errorHandler");
 let todos = [];
 const requestListener = (req, res) => {
     const headers = {
@@ -23,18 +23,22 @@ const requestListener = (req, res) => {
     }else if (req.url === "/todos" && req.method === "POST"){
         req.on('end', () =>{
             try {
-                const todo = {
-                    title: JSON.parse(body).title,
-                    id: uuidv4()
+                let title = JSON.parse(body).title;
+                if (title !== undefined){
+                    const todo = {
+                        title: JSON.parse(body).title,
+                        id: uuidv4()
+                    }
+                    todos.push(todo);
+                    res.writeHeader(201, headers);
+                    res.write(JSON.stringify({
+                        status: "success",
+                        data: todos
+                    }));
+                    res.end();
+                }else {
+                    errorHandler()
                 }
-                todos.push(todo);
-                console.log(todos)
-                res.writeHeader(200, headers);
-                res.write(JSON.stringify({
-                    status: "success",
-                    data: todos
-                }));
-                res.end();
             }catch (error){
                 errorHandler(res,headers);
             }
